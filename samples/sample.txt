@@ -1,0 +1,3 @@
+benign
+indeterminate
+malignant indeterminate
