@@ -1,6 +1,10 @@
 # Specific to this repository
-.ndpi
-.xml
+*.ndpi
+!sample.ndpi
+*.xml
+!sample.xml
+*.txt
+!sample.txt
 
 # Files to ignore for Mac
 .DS_Store
