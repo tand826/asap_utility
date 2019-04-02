@@ -136,7 +136,6 @@ class MaskMaker(Setup):
 
     def __init__(self):
         super().__init__()
-        self.make_mask()
 
     def make_mask(self):
         # Make base masks.
@@ -186,8 +185,6 @@ class PatchMaker(MaskMaker):
 
     def __init__(self):
         super().__init__()
-        self.make_patch_parallel()
-        self.saved_areas()
 
     def make_patch_parallel(self):
         print(f"Processing {self.tiles[0]*self.tiles[1]} patches x {len(self.classes)} classes.")
@@ -265,3 +262,6 @@ class PatchMaker(MaskMaker):
 
 if __name__ == '__main__':
     pm = PatchMaker()
+    pm.make_mask()
+    pm.make_patch_parallel()
+    pm.saved_areas()
