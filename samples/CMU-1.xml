@@ -1,0 +1,96 @@
+<?xml version="1.0"?>
+<ASAP_Annotations>
+	<Annotations>
+		<Annotation Name="Annotation 0" Type="Rectangle" PartOfGroup="rectangles" Color="#F4FA58">
+			<Coordinates>
+				<Coordinate Order="0" X="3533.68359" Y="23545.0879" />
+				<Coordinate Order="1" X="5146.88672" Y="23545.0879" />
+				<Coordinate Order="2" X="5146.88672" Y="26387.3965" />
+				<Coordinate Order="3" X="3533.68359" Y="26387.3965" />
+			</Coordinates>
+		</Annotation>
+		<Annotation Name="Annotation 1" Type="Rectangle" PartOfGroup="rectangles" Color="#F4FA58">
+			<Coordinates>
+				<Coordinate Order="0" X="7912.37793" Y="20818.0059" />
+				<Coordinate Order="1" X="9986.49707" Y="20818.0059" />
+				<Coordinate Order="2" X="9986.49707" Y="23122.582" />
+				<Coordinate Order="3" X="7912.37793" Y="23122.582" />
+			</Coordinates>
+		</Annotation>
+		<Annotation Name="Annotation 2" Type="Polygon" PartOfGroup="polygons" Color="#F4FA58">
+			<Coordinates>
+				<Coordinate Order="0" X="11906.9766" Y="20049.8125" />
+				<Coordinate Order="1" X="10332.1826" Y="20126.6309" />
+				<Coordinate Order="2" X="8872.61816" Y="19512.0781" />
+				<Coordinate Order="3" X="8872.61816" Y="17937.2852" />
+				<Coordinate Order="4" X="10293.7734" Y="17207.502" />
+				<Coordinate Order="5" X="11906.9766" Y="17015.4531" />
+				<Coordinate Order="6" X="13443.3613" Y="17092.2734" />
+				<Coordinate Order="7" X="14019.5049" Y="18551.8379" />
+				<Coordinate Order="8" X="12944.0361" Y="19704.127" />
+			</Coordinates>
+		</Annotation>
+		<Annotation Name="Annotation 3" Type="Spline" PartOfGroup="splines" Color="#F4FA58">
+			<Coordinates>
+				<Coordinate Order="0" X="15018.1543" Y="30420.4043" />
+				<Coordinate Order="1" X="15133.3838" Y="28845.6113" />
+				<Coordinate Order="2" X="16093.623" Y="27616.5039" />
+				<Coordinate Order="3" X="17245.9121" Y="26541.0352" />
+				<Coordinate Order="4" X="18590.248" Y="25657.6152" />
+				<Coordinate Order="5" X="20126.6309" Y="25273.5176" />
+				<Coordinate Order="6" X="20318.6797" Y="26848.3125" />
+				<Coordinate Order="7" X="19512.0781" Y="28231.0586" />
+				<Coordinate Order="8" X="18436.6094" Y="29344.9355" />
+				<Coordinate Order="9" X="17245.9121" Y="30381.9961" />
+			</Coordinates>
+		</Annotation>
+		<Annotation Name="Annotation 4" Type="PointSet" PartOfGroup="pointsets" Color="#F4FA58">
+			<Coordinates>
+				<Coordinate Order="0" X="32840.2109" Y="14941.335" />
+				<Coordinate Order="1" X="32417.7051" Y="13328.1318" />
+				<Coordinate Order="2" X="31879.9707" Y="11868.5674" />
+				<Coordinate Order="3" X="31342.2363" Y="10293.7734" />
+				<Coordinate Order="4" X="31342.2363" Y="8680.57031" />
+				<Coordinate Order="5" X="31342.2363" Y="7028.95703" />
+				<Coordinate Order="6" X="31649.5117" Y="5454.16357" />
+				<Coordinate Order="7" X="32917.0273" Y="6529.63232" />
+				<Coordinate Order="8" X="33262.7148" Y="8066.0166" />
+				<Coordinate Order="9" X="33416.3555" Y="9602.40039" />
+				<Coordinate Order="10" X="33762.0391" Y="11215.6035" />
+				<Coordinate Order="11" X="35029.5586" Y="12137.4346" />
+				<Coordinate Order="12" X="36143.4375" Y="13328.1318" />
+				<Coordinate Order="13" X="36796.3984" Y="14941.335" />
+				<Coordinate Order="14" X="36911.6289" Y="16516.1289" />
+				<Coordinate Order="15" X="35490.4727" Y="17130.6836" />
+				<Coordinate Order="16" X="33992.5" Y="16592.9473" />
+			</Coordinates>
+		</Annotation>
+		<Annotation Name="Annotation 5" Type="Spline" PartOfGroup="splines" Color="#F4FA58">
+			<Coordinates>
+				<Coordinate Order="0" X="12452.8135" Y="19287.4844" />
+				<Coordinate Order="1" X="11545.9482" Y="19398.0781" />
+				<Coordinate Order="2" X="10639.082" Y="19398.0781" />
+				<Coordinate Order="3" X="9842.81055" Y="18955.7031" />
+				<Coordinate Order="4" X="9643.74219" Y="18093.0762" />
+				<Coordinate Order="5" X="10462.1328" Y="17628.584" />
+				<Coordinate Order="6" X="11368.999" Y="17628.584" />
+				<Coordinate Order="7" X="12253.7461" Y="17717.0586" />
+				<Coordinate Order="8" X="12806.7129" Y="18424.8555" />
+			</Coordinates>
+		</Annotation>
+	</Annotations>
+	<AnnotationGroups>
+		<Group Name="rectangles" PartOfGroup="None" Color="#64FE2E">
+			<Attributes />
+		</Group>
+		<Group Name="polygons" PartOfGroup="None" Color="#64FE2E">
+			<Attributes />
+		</Group>
+		<Group Name="splines" PartOfGroup="None" Color="#64FE2E">
+			<Attributes />
+		</Group>
+		<Group Name="pointsets" PartOfGroup="None" Color="#64FE2E">
+			<Attributes />
+		</Group>
+	</AnnotationGroups>
+</ASAP_Annotations>

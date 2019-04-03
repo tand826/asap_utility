@@ -175,7 +175,7 @@ class MaskMaker(Setup):
         print("Thumbnails saved.")
 
     def save_mask_large(self):
-        for group, mask in self.masks.item():
+        for group, mask in self.masks.items():
             cv2.imwrite(f"{self.outdir}/masks/{group}.png",
                         mask, (cv2.IMWRITE_PXM_BINARY, 1))
         print("Masks saved.")
@@ -186,29 +186,23 @@ class PatchMaker(MaskMaker):
     def __init__(self):
         super().__init__()
 
-    def make_patch_parallel(self):
-        print(f"Processing {self.tiles[0]*self.tiles[1]} patches x {len(self.classes)} classes.")
-        for group in self.classes:
-            if self.args.mode == "non_rect" or self.args.mode == "all":
-                if np.sum(self.masks[group]) > 0:
-                    print(f"{'-'*10} {group} {'-'*10}")
-                    iterator = product(list(range(self.tiles[0])), list(range(self.tiles[1])))
-                    parallel = Parallel(n_jobs=-1, verbose=1, backend="threading")
-                    parallel([delayed(self.make_patch)(x, y, group) for x, y in iterator])
-            elif self.args.mode == "rect":
-                self.make_rect()
+    def convert(self):
+        if self.args.mode == "non_rect" or self.args.mode == "all":
+            self.make_patch_parallel()
+        if self.args.mode == "rect" or self.args.mode == "all":
+            self.make_rect_parallel()
 
     def make_rect_parallel(self):
         print(f"Cutting out rectangles.")
         parallel = Parallel(n_jobs=-1, verbose=1, backend="threading")
-        parallel([delayed(self.make_patch)(annotation) for annotation in self.annotations])
+        parallel([delayed(self.make_rect)(annotation) for annotation in self.annotations])
 
     def make_rect(self, annotation):
         shapetype = annotation.attrib["Type"]
         group = annotation.attrib["PartOfGroup"]
-        save_to = Path(f"{self.outdir}/{group}_rect")
-        self._check(save_to)
         if group in self.classes and shapetype == "Rectangle":
+            save_to = Path(f"{self.outdir}/{group}_rect")
+            self._check(save_to)
             contour = []
             for point in annotation.xpath("Coordinates/Coordinate"):
                 x = np.int32(np.float(point.attrib["X"]))
@@ -220,7 +214,16 @@ class PatchMaker(MaskMaker):
             maxx = np.max(contour[:, 0])
             maxy = np.max(contour[:, 1])
             rect = self.img.read_region((minx, miny), 0, (maxx - minx, maxy - miny))
-            rect.save(str(save_to/f"{minx}_{miny}_{maxx}_{maxy}".png))
+            rect.save(str(save_to/f"{minx}_{miny}_{maxx}_{maxy}.png"))
+
+    def make_patch_parallel(self):
+        print(f"Extracting {self.tiles[0]*self.tiles[1]} patches x {len(self.classes)} classes.")
+        for group in self.classes:
+            if np.sum(self.masks[group]) > 0:
+                print(f"{'-'*10} {group} {'-'*10}")
+                iterator = product(list(range(self.tiles[0])), list(range(self.tiles[1])))
+                parallel = Parallel(n_jobs=-1, verbose=1, backend="threading")
+                parallel([delayed(self.make_patch)(x, y, group) for x, y in iterator])
 
     def make_patch(self, x, y, group):
         if self.is_onshore(x, y, group):
@@ -234,7 +237,7 @@ class PatchMaker(MaskMaker):
         return True if 1. >= np.sum(mask) / patch_area >= self.thresh else False
 
     def show_saved_areas(self):
-        for group, mask in self.masks.item():
+        for group, mask in self.masks.items():
             baseimg = mask * 255
             patches = []
             for path in list((self.outdir/group).glob("*.png")):
@@ -260,5 +263,5 @@ class PatchMaker(MaskMaker):
 if __name__ == '__main__':
     pm = PatchMaker()
     pm.make_mask()
-    pm.make_patch_parallel()
+    pm.convert()
     pm.show_saved_areas()
