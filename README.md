@@ -60,6 +60,7 @@ python converter.py [-h] [-s SIZE] [-ov OVERLAP] [-a ANNOTATION]
 # Extra rule
 - If you want to exclude specific area in an annotated area, you can set a extra rule in the "-c" "--classes" file. sample/CMU-1.txt is the smaple file.
 - Each line means [group name] [exclude group name] [exclude group name]...
+- All the excluded classes have to be listed beforehand. This mean the "exclude group name" has to be listed on the left as "group name" in a line.
 - If you use sample/CMU-1.txt, "splines" annotation area will be excluded from "polygons" area. This makes a saved mask like below.
 
 ![sample image with extra rule](images/mask_extra.png)
