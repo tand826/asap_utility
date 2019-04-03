@@ -175,9 +175,9 @@ class MaskMaker(Setup):
         print("Thumbnails saved.")
 
     def save_mask_large(self):
-        for group in self.classes:
+        for group, mask in self.masks.item():
             cv2.imwrite(f"{self.outdir}/masks/{group}.png",
-                        self.masks[group], (cv2.IMWRITE_PXM_BINARY, 1))
+                        mask, (cv2.IMWRITE_PXM_BINARY, 1))
         print("Masks saved.")
 
 
@@ -196,28 +196,31 @@ class PatchMaker(MaskMaker):
                     parallel = Parallel(n_jobs=-1, verbose=1, backend="threading")
                     parallel([delayed(self.make_patch)(x, y, group) for x, y in iterator])
             elif self.args.mode == "rect":
-                print("here")
                 self.make_rect()
 
-    def make_rect(self):
-        for annotation in self.annotations:
-            shapetype = annotation.attrib["Type"]
-            group = annotation.attrib["PartOfGroup"]
-            save_to = Path(f"{self.outdir}/{group}_rect")
-            self._check(save_to)
-            if group in self.classes and shapetype == "Rectangle":
-                contour = []
-                for point in annotation.xpath("Coordinates/Coordinate"):
-                    x = np.int32(np.float(point.attrib["X"]))
-                    y = np.int32(np.float(point.attrib["Y"]))
-                    contour.append([x, y])
-                contour = np.array(contour)
-                minx = np.min(contour[:, 0])
-                miny = np.min(contour[:, 1])
-                maxx = np.max(contour[:, 0])
-                maxy = np.max(contour[:, 1])
-                rect = self.img.read_region((minx, miny), 0, (maxx - minx, maxy - miny))
-                rect.save(str(save_to/f"{minx}_{miny}_{maxx}_{maxy}".png))
+    def make_rect_parallel(self):
+        print(f"Cutting out rectangles.")
+        parallel = Parallel(n_jobs=-1, verbose=1, backend="threading")
+        parallel([delayed(self.make_patch)(annotation) for annotation in self.annotations])
+
+    def make_rect(self, annotation):
+        shapetype = annotation.attrib["Type"]
+        group = annotation.attrib["PartOfGroup"]
+        save_to = Path(f"{self.outdir}/{group}_rect")
+        self._check(save_to)
+        if group in self.classes and shapetype == "Rectangle":
+            contour = []
+            for point in annotation.xpath("Coordinates/Coordinate"):
+                x = np.int32(np.float(point.attrib["X"]))
+                y = np.int32(np.float(point.attrib["Y"]))
+                contour.append([x, y])
+            contour = np.array(contour)
+            minx = np.min(contour[:, 0])
+            miny = np.min(contour[:, 1])
+            maxx = np.max(contour[:, 0])
+            maxy = np.max(contour[:, 1])
+            rect = self.img.read_region((minx, miny), 0, (maxx - minx, maxy - miny))
+            rect.save(str(save_to/f"{minx}_{miny}_{maxx}_{maxy}".png))
 
     def make_patch(self, x, y, group):
         if self.is_onshore(x, y, group):
@@ -228,17 +231,11 @@ class PatchMaker(MaskMaker):
         location, level, size = self.dzimg.get_tile_coordinates(self.deepest_level, (x, y))
         mask = self.masks[group][location[1]:location[1]+size[1], location[0]:location[0]+size[0]]
         patch_area = mask.shape[0] * mask.shape[1]
-        if 1. < np.sum(mask) / patch_area:
-            print(x, y, "Something went wrong.")
-        if 1. >= np.sum(mask) / patch_area >= self.thresh:
-            onshore = True
-        else:
-            onshore = False
-        return onshore
+        return True if 1. >= np.sum(mask) / patch_area >= self.thresh else False
 
-    def saved_areas(self):
-        for group in self.classes:
-            baseimg = self.masks[group] * 255
+    def show_saved_areas(self):
+        for group, mask in self.masks.item():
+            baseimg = mask * 255
             patches = []
             for path in list((self.outdir/group).glob("*.png")):
                 coord = path.stem.split("_")
@@ -264,4 +261,4 @@ if __name__ == '__main__':
     pm = PatchMaker()
     pm.make_mask()
     pm.make_patch_parallel()
-    pm.saved_areas()
+    pm.show_saved_areas()
