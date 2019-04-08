@@ -1,5 +1,7 @@
 """Utility script for ASAP."""
 import argparse
+import math
+import sys
 import copy
 from itertools import product
 from joblib import Parallel, delayed
@@ -44,10 +46,16 @@ class Setup(object):
         parser.add_argument("-sm", "--save_mask",
                             help="Whether to save masks.",
                             action="store_true")
-        parser.add_argument("-m", "--mode",
+        parser.add_argument("-mo", "--mode",
                             choices=["rect", "non_rect", "all"],
                             default="all",
                             help="Shapes to extract.")
+        self.mag_choices = [40, 20, 10]
+        parser.add_argument("-ma", "--magnification",
+                            choices=self.mag_choices,
+                            help="The magnification of the source lens.",
+                            default=40,
+                            type=int)
         self.args = parser.parse_args()
 
         self.wsi = Path(self.args.wsi)
@@ -66,10 +74,20 @@ class Setup(object):
                                        self.patch_size_no_overlap,
                                        self.overlap)
         self.patch_area = self.patch_size_with_overlap ** 2
-        self.deepest_level = self.dzimg.level_count - 1
-        self.tiles = self.dzimg.level_tiles[-1]
+        self.set_mag()
+        self.deepest_level = self.dzimg.level_count - self.downlevel
+        self.tiles = self.dzimg.level_tiles[self.downlevel * -1]
         self.patch_iterator = product(list(range(self.tiles[0])), list(range(self.tiles[1])))
-        self.width, self.height = self.img.dimensions
+        self.width, self.height = self.dzimg.level_dimensions[self.downlevel * -1]
+
+    def set_mag(self):
+        self.magnification = int(self.img.properties['hamamatsu.SourceLens'])
+        if self.args.magnification > self.magnification:
+            print(f"You cannot set magnification more than {self.magnification}.")
+            sys.exit()
+        self.mag_choices_fixed = [i for i in self.mag_choices if i <= self.magnification]
+        self.downlevel = self.mag_choices.index(self.args.magnification)
+        self.patch_size_with_overlap *= self.downlevel
 
     def read_annotation(self):
         """
@@ -148,7 +166,8 @@ class MaskMaker(Setup):
                     x = np.int32(np.float(point.attrib["X"]))
                     y = np.int32(np.float(point.attrib["Y"]))
                     contour.append([[x, y]])
-                contour = np.array(contour, dtype=np.int32)
+                contour = np.array(contour) / self.downlevel
+                contour = contour.astype(np.int32)
                 self.masks[group] = cv2.drawContours(self.masks[group], [contour], 0, True, thickness=cv2.FILLED)
 
         # Excluding process
@@ -245,8 +264,8 @@ class PatchMaker(MaskMaker):
                 patches.append(coord)
             for patch in patches:
                 x, y = patch
-                offsetx = self.patch_size_no_overlap * int(x)
-                offsety = self.patch_size_no_overlap * int(y)
+                offsetx = self.patch_size_no_overlap * int(x) * self.downlevel
+                offsety = self.patch_size_no_overlap * int(y) * self.downlevel
                 target = baseimg[offsety:offsety+self.patch_size_with_overlap, offsetx:offsetx+self.patch_size_with_overlap]
                 new_patch = np.ones(target.shape) * 127
                 baseimg[offsety:offsety+self.patch_size_with_overlap, offsetx:offsetx+self.patch_size_with_overlap] = new_patch
