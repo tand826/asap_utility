@@ -9,7 +9,7 @@ Utility script for ASAP.
 ```
 python converter.py [-h] [-s SIZE] [-ov OVERLAP] [-a ANNOTATION]
        [-od OUTPUT_DIR] [-t THRESH] [-c CLASSES] [-sm]
-       [-m {rect,non_rect,all}]
+       [-m {rect,non_rect,all}] [-ma {40,20,10,5,4}]
        wsi
 
 ```
@@ -54,8 +54,9 @@ python converter.py [-h] [-s SIZE] [-ov OVERLAP] [-a ANNOTATION]
 | output_dir | The output directory to save the results. |        ./output | same as wsi |
 | thresh     | The threshold value to decide whether a patch is in the annotation area. | 0.8          |1.0|
 | classes    | A file to mannualy define the classes. You can set [extra rules](https://github.com/tand826/asap_utility#extra-rule) here. | samples/CMU-1.txt | all the groups set in the xml file. |
-| save_mask  | Whether to save the mask of original wsi size. | -m (if set, True) | False |
+| save_mask  | Whether to save the mask of original wsi size. | -sm (if set, True) | False |
 | mode       | Annotation type to cut out. You can choose "rect" for cutting out only Type Rectangle, "non_rect" for cutting out of annotations except for Type Rectangle, "all" for cutting all annotations. | all | all |
+| magnification| The magnification of the source lens. You can set smaller value. | 20 | 40 |
 
 # Extra rule
 - If you want to exclude specific area in an annotated area, you can set a extra rule in the "-c" "--classes" file. sample/CMU-1.txt is the smaple file.
