@@ -168,7 +168,6 @@ class MaskMaker(Setup):
                     x = np.int32(np.float(point.attrib["X"]))
                     y = np.int32(np.float(point.attrib["Y"]))
                     contour.append([[x, y]])
-                print(self.downlevel)
                 contour = np.array(contour) / self.downrate
                 contour = contour.astype(np.int32)
                 self.masks[group] = cv2.drawContours(self.masks[group], [contour], 0, True, thickness=cv2.FILLED)
