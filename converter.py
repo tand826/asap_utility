@@ -39,7 +39,8 @@ class Setup(object):
                             help="Where to save the output files.")
         parser.add_argument("-t", "--thresh",
                             help="Threshold value whether to cut out a patch.",
-                            default="1.")
+                            default=1.,
+                            type=float)
         parser.add_argument("-c", "--classes",
                             help="Add rule file to define on/off of classes.\
                                   if no rules selected, this targets all areas.")
@@ -50,7 +51,7 @@ class Setup(object):
                             choices=["rect", "non_rect", "all"],
                             default="all",
                             help="Shapes to extract.")
-        self.mag_choices = [40, 20, 10]
+        self.mag_choices = [40, 20, 10, 5, 4]
         parser.add_argument("-ma", "--magnification",
                             choices=self.mag_choices,
                             help="The magnification of the source lens.",
@@ -87,6 +88,8 @@ class Setup(object):
             sys.exit()
         self.mag_choices_fixed = [i for i in self.mag_choices if i <= self.magnification]
         self.downlevel = self.mag_choices_fixed.index(self.args.magnification) + 1
+        self.downrate = int(self.magnification / self.args.magnification)
+
 
     def read_annotation(self):
         """
@@ -166,7 +169,7 @@ class MaskMaker(Setup):
                     y = np.int32(np.float(point.attrib["Y"]))
                     contour.append([[x, y]])
                 print(self.downlevel)
-                contour = np.array(contour) / self.downlevel
+                contour = np.array(contour) / self.downrate
                 contour = contour.astype(np.int32)
                 self.masks[group] = cv2.drawContours(self.masks[group], [contour], 0, True, thickness=cv2.FILLED)
 
@@ -246,11 +249,12 @@ class PatchMaker(MaskMaker):
 
     def make_patch(self, x, y, group):
         if self.is_onshore(x, y, group):
-            patch = self.dzimg.get_tile(self.deepest_level, (x*self.downlevel, y*self.downlevel))
+            patch = self.dzimg.get_tile(self.deepest_level, (x*self.downrate, y*self.downrate))
             patch.save(f"{self.outdir}/{group}/{x:04}_{y:04}.png")
 
     def is_onshore(self, x, y, group):
         location, level, size = self.dzimg.get_tile_coordinates(self.deepest_level, (x, y))
+        size = np.array(size) * self.downrate
         mask = self.masks[group][location[1]:location[1]+size[1], location[0]:location[0]+size[0]]
         patch_area = mask.shape[0] * mask.shape[1]
         return True if 1. >= np.sum(mask) / patch_area >= self.thresh else False
@@ -264,12 +268,12 @@ class PatchMaker(MaskMaker):
                 patches.append(coord)
             for patch in patches:
                 x, y = patch
-                offsetx = self.patch_size_no_overlap * int(x) * self.downlevel
-                offsety = self.patch_size_no_overlap * int(y) * self.downlevel
-                target = baseimg[offsety:offsety+self.patch_size_with_overlap, offsetx:offsetx+self.patch_size_with_overlap]
+                offsetx = self.patch_size_no_overlap * int(x) * self.downrate
+                offsety = self.patch_size_no_overlap * int(y) * self.downrate
+                patchsize = self.patch_size_with_overlap * self.downrate
+                target = baseimg[offsety:offsety+patchsize, offsetx:offsetx+patchsize]
                 new_patch = np.ones(target.shape) * 127
-                #baseimg[offsety:offsety+self.patch_size_with_overlap, offsetx:offsetx+self.patch_size_with_overlap] = new_patch
-                baseimg[offsety:offsety+self.patch_size_with_overlap, offsetx:offsetx+self.patch_size_with_overlap] = new_patch
+                baseimg[offsety:offsety+patchsize, offsetx:offsetx+patchsize] = new_patch
             if self.height > self.width:
                 size = (int(512*self.width/self.height), 512)
             else:
