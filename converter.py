@@ -86,8 +86,7 @@ class Setup(object):
             print(f"You cannot set magnification more than {self.magnification}.")
             sys.exit()
         self.mag_choices_fixed = [i for i in self.mag_choices if i <= self.magnification]
-        self.downlevel = self.mag_choices.index(self.args.magnification)
-        self.patch_size_with_overlap *= self.downlevel
+        self.downlevel = self.mag_choices_fixed.index(self.args.magnification) + 1
 
     def read_annotation(self):
         """
@@ -166,6 +165,7 @@ class MaskMaker(Setup):
                     x = np.int32(np.float(point.attrib["X"]))
                     y = np.int32(np.float(point.attrib["Y"]))
                     contour.append([[x, y]])
+                print(self.downlevel)
                 contour = np.array(contour) / self.downlevel
                 contour = contour.astype(np.int32)
                 self.masks[group] = cv2.drawContours(self.masks[group], [contour], 0, True, thickness=cv2.FILLED)
@@ -246,7 +246,7 @@ class PatchMaker(MaskMaker):
 
     def make_patch(self, x, y, group):
         if self.is_onshore(x, y, group):
-            patch = self.dzimg.get_tile(self.deepest_level, (x, y))
+            patch = self.dzimg.get_tile(self.deepest_level, (x*self.downlevel, y*self.downlevel))
             patch.save(f"{self.outdir}/{group}/{x:04}_{y:04}.png")
 
     def is_onshore(self, x, y, group):
@@ -268,6 +268,7 @@ class PatchMaker(MaskMaker):
                 offsety = self.patch_size_no_overlap * int(y) * self.downlevel
                 target = baseimg[offsety:offsety+self.patch_size_with_overlap, offsetx:offsetx+self.patch_size_with_overlap]
                 new_patch = np.ones(target.shape) * 127
+                #baseimg[offsety:offsety+self.patch_size_with_overlap, offsetx:offsetx+self.patch_size_with_overlap] = new_patch
                 baseimg[offsety:offsety+self.patch_size_with_overlap, offsetx:offsetx+self.patch_size_with_overlap] = new_patch
             if self.height > self.width:
                 size = (int(512*self.width/self.height), 512)
